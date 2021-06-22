@@ -11,7 +11,7 @@
 
 */
 
-const botsScrapper = require("./bots.js"); // Si tienes el scrapper de bots en otro sitio, especificarlo aquí.
+const findBot = require("./findBot.js"); // Si tienes el scrapper de bots en otro sitio, especificarlo aquí.
 const fetch = require("node-fetch");
 
 const scrape = async (search = "") => {
@@ -42,7 +42,7 @@ const scrape = async (search = "") => {
 
 	const findedBot = splitBody.find(e => e.includes('<a title=') && e.includes('class="cardBtn1"')).match(/\d{17,19}/g)[0];
 
-	return await botsScrapper(findedBot);
+	return await findBot(findedBot);
 
 }
 
