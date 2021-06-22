@@ -4,14 +4,14 @@
 
 /*
 
-	const dthingsBotSearch = require("./botSearch.js");
-	dthingsBotSearch("Bot sin nada que hacer")
+	const dtBotSearch = require("./botSearch.js");
+	dtBotSearch("Bot sin nada que hacer")
 		.then(bot => console.log(bot));
 		.catch(err => console.log(error));
 
 */
 
-const findBot = require("./findBot.js"); // Si tienes el scrapper de bots en otro sitio, especificarlo aquí.
+const botInfo = require("./botInfo.js"); // Si tienes el scrapper de bots en otro sitio, especificarlo aquí.
 const fetch = require("node-fetch");
 
 const scrape = async (search = "") => {
@@ -40,9 +40,10 @@ const scrape = async (search = "") => {
 	if (pageTitle.includes("Web server is down")) { throw "DiscordThings web server is down, maybe for maintenance" }
 	if (pageTitle == "DiscordThings | 404") { throw "Search term not found" }
 
-	const findedBot = splitBody.find(e => e.includes('<a title=') && e.includes('class="cardBtn1"')).match(/\d{17,19}/g)[0];
-
-	return await findBot(findedBot);
+	const findedBot = splitBody.find(e => e.includes('<a title=') && e.includes('class="cardBtn1"'));
+	if (!findedBot) { throw "Search term not found" }
+		
+	return await botInfo(findedBot.match(/\d{3,}/g)[0]);
 
 }
 
