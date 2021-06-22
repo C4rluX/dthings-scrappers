@@ -1,11 +1,11 @@
-// Con este scrapper puedes buscar bots en la botlist por su ID
+// Con este scrapper puedes obtener información de algún bot en la botlist mediante su ID
 
 // Ejemplo de como usarlo:
 
 /*
 
-	const findBot = require("./findBot.js");
-	findBot("794330629747638312")
+	const dtBotInfo = require("./botInfo.js");
+	botInfo("794330629747638312")
 		.then(bot => console.log(bot));
 		.catch(err => console.log(error));
 
@@ -19,7 +19,6 @@ const scrape = async (botID = "") => {
 	if (typeof botID !== "string") { throw "Invalid bot ID, must be a string" }
 
 	const response = await fetch("https://discordthings.com/bot/" + botID)
-
 	const body = await response.text();
 
 	var pushString = "";
