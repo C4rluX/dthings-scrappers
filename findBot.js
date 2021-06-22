@@ -4,8 +4,8 @@
 
 /*
 
-	const dthingsBots = require("./bots.js");
-	dthingsBots("794330629747638312")
+	const findBot = require("./findBot.js");
+	findBot("794330629747638312")
 		.then(bot => console.log(bot));
 		.catch(err => console.log(error));
 
