@@ -1,0 +1,49 @@
+// Con este scrapper puedes buscar bots en la botlist por término de busqueda
+
+// Ejemplo de como usarlo:
+
+/*
+
+	const dthingsBotSearch = require("./botSearch.js");
+	dthingsBotSearch("Bot sin nada que hacer")
+		.then(bot => console.log(bot));
+		.catch(err => console.log(error));
+
+*/
+
+const botsScrapper = require("./bots.js"); // Si tienes el scrapper de bots en otro sitio, especificarlo aquí.
+const fetch = require("node-fetch");
+
+const scrape = async (search = "") => {
+
+	if (!search) { throw "Invalid search term" }
+	if (typeof search !== "string") { throw "Invalid search term, must be a string" }
+
+	const response = await fetch("https://discordthings.com/search?q=" + encodeURIComponent(search) + "&page=1")
+	const body = await response.text();
+
+	var pushString = "";
+	var splitBody = [];
+
+	body.split("").map(e => {
+		if (e == "<") {
+			if (pushString.trim()) splitBody.push(pushString.trim());
+			pushString = e;
+		} else if (e == ">") {
+			pushString += e;
+			splitBody.push(pushString.trim());
+			pushString = "";
+		} else pushString += e
+	});
+
+	const pageTitle = splitBody[splitBody.indexOf("<title>") + 1];
+	if (pageTitle.includes("Web server is down")) { throw "DiscordThings web server is down, maybe for maintenance" }
+	if (pageTitle == "DiscordThings | 404") { throw "Search term not found" }
+
+	const findedBot = splitBody.find(e => e.includes('<a title=') && e.includes('class="cardBtn1"')).match(/\d{17,19}/g)[0];
+
+	return await botsScrapper(findedBot);
+
+}
+
+module.exports = scrape;
