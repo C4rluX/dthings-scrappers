@@ -6,8 +6,8 @@
 
 	const dtBotSearch = require("./botSearch.js");
 	dtBotSearch("Bot sin nada que hacer")
-		.then(bot => console.log(bot));
-		.catch(err => console.log(error));
+		.then(bot => console.log(bot))
+		.catch(err => console.log(error))
 
 */
 
