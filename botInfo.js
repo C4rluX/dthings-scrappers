@@ -37,7 +37,7 @@ const scrape = async (botID = "") => {
 
 	const pageTitle = splitBody[splitBody.indexOf("<title>") + 1];
 
-	if (pageTitle == "DiscordThings | 404") { throw "The bot is not registered on the page" }
+	if (pageTitle == "DiscordThings | 404") { throw "Bot ID not found" }
 	if (pageTitle.includes("Web server is down")) { throw "DiscordThings web server is down, maybe for maintenance" }
 
 	const botInfo = splitBody.filter((e, i) => { if (i > 0 && splitBody[i - 1].includes('<p class="box-2">')) return e; } );
