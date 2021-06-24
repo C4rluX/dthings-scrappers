@@ -6,8 +6,8 @@
 
 	const dtBotInfo = require("./botInfo.js");
 	botInfo("794330629747638312")
-		.then(bot => console.log(bot));
-		.catch(err => console.log(error));
+		.then(bot => console.log(bot))
+		.catch(err => console.log(error))
 
 */
 
