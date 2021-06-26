@@ -5,7 +5,7 @@
 /*
 
 	const dtBotInfo = require("./botInfo.js");
-	botInfo("794330629747638312")
+	dtBotInfo("794330629747638312")
 		.then(bot => console.log(bot))
 		.catch(err => console.log(error))
 
@@ -37,7 +37,7 @@ const scrape = async (botID = "") => {
 
 	const pageTitle = splitBody[splitBody.indexOf("<title>") + 1];
 
-	if (pageTitle == "DiscordThings | 404") { throw "Bot ID not found" }
+	if (pageTitle == "DiscordThings | 404") { throw "The bot is not registered on the page" }
 	if (pageTitle.includes("Web server is down")) { throw "DiscordThings web server is down, maybe for maintenance" }
 
 	const botInfo = splitBody.filter((e, i) => { if (i > 0 && splitBody[i - 1].includes('<p class="box-2">')) return e; } );
@@ -49,7 +49,7 @@ const scrape = async (botID = "") => {
 	if (isNaN(invites)) invites = 0;
 
 	return {
-		name: splitBody[splitBody.indexOf("<title>") + 1].replace(" | DiscordThings", ""),
+		name: splitBody[splitBody.findIndex(e => e.includes('class="has-text-white is-size-3"')) + 1],
 		tag: splitBody[splitBody.findIndex(e => e.includes('<span class="is-size-4"')) + 1],
 		id: botID,
 		avatar: splitBody.find(e => e.includes('<img draggable="false"') && e.includes('https://cdn.discordapp.com/avatars/')).match(/https:.*"/g)[0].slice(0, -1),
