@@ -1,4 +1,4 @@
-// Con este scrapper puedes obtener información de algún usuario registrado en la botlist
+// Con este scrapper puedes obtener información de algún usuario registrado en la botlist mediante su ID
 
 // Ejemplo de como usarlo:
 
