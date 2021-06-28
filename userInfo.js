@@ -7,7 +7,7 @@
 	const dtUserInfo = require("./userInfo.js");
 	dtUserInfo("654118072285921281")
 		.then(bot => console.log(user))
-		.catch(err => console.log(error))
+		.catch(err => console.log(err))
 
 */
 
@@ -35,7 +35,11 @@ const scrape = async (userID = "") => {
 		} else pushString += e
 	});
 
-	const votes = splitBody[splitBody.indexOf('<span class="heading has-text-white">') + 1];
+
+	const pageTitle = splitBody[splitBody.indexOf("<title>") + 1];
+	if (pageTitle == "DiscordThings | 404") { throw "The user is not registered on the page" }
+
+	var votes = splitBody[splitBody.indexOf('<span class="heading has-text-white">') + 1];
 	if (isNaN(votes)) votes = 0;
 
 	var badges = splitBody.filter( (e, i) => splitBody[i - 1] == '<span class="tooltiptext">' && !splitBody[i - 2].includes("discord.com/assets/") );
@@ -49,7 +53,6 @@ const scrape = async (userID = "") => {
 	}
 	else staffPoints = false;
 	
-
 	return {
 		username: splitBody[splitBody.findIndex(e => e.includes('class="UserName is-size-5 has-text-white"')) + 1],
 		id: userID,
