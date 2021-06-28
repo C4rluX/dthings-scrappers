@@ -7,7 +7,7 @@
 	const dtBotInfo = require("./botInfo.js");
 	dtBotInfo("794330629747638312")
 		.then(bot => console.log(bot))
-		.catch(err => console.log(error))
+		.catch(err => console.log(err))
 
 */
 
@@ -42,7 +42,7 @@ const scrape = async (botID = "") => {
 
 	const botInfo = splitBody.filter((e, i) => { if (i > 0 && splitBody[i - 1].includes('<p class="box-2">')) return e; } );
 
-	const votes = botInfo[2].replace("Votos:", "").trim();
+	var votes = botInfo[2].replace("Votos:", "").trim();
 	if (isNaN(votes)) votes = 0;
 
 	const invites = botInfo[3].replace("Invitaciones:", "").trim();
