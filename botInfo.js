@@ -54,7 +54,7 @@ const scrape = async (botID = "") => {
 	return {
 		name: splitBody[splitBody.findIndex(e => e.includes('class="has-text-white is-size-3"')) + 1],
 		tag: splitBody[splitBody.findIndex(e => e.includes('<span class="is-size-4"')) + 1],
-		id: botID,
+		id: splitBody.find(e => e.includes('<a href="/bot/') && e.includes('report')).match(/\d{3,}/g)[0],
 		avatar: splitBody.find(e => e.includes('<img draggable="false"') && e.includes('https://cdn.discordapp.com/avatars/')).match(/https:.*"/g)[0].slice(0, -1),
 		description: splitBody[splitBody.indexOf('<h3 class="has-text-white is-size-6" style="margin-bottom: 1px;">') + 1],
 		author: splitBody[splitBody.indexOf('<h3 class="has-text-white is-size-6" style="margin-bottom: 1px;">') + 4],
