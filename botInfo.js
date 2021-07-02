@@ -48,6 +48,9 @@ const scrape = async (botID = "") => {
 	const invites = botInfo[3].replace("Invitaciones:", "").trim();
 	if (isNaN(invites)) invites = 0;
 
+	var page = splitBody.find(e => e.includes('<a class="mt-3" rel="nofollow noreferer" target="_blank"'));
+	if (page) page = page.match(/http.+/g)[0].slice(0, -2);
+
 	return {
 		name: splitBody[splitBody.findIndex(e => e.includes('class="has-text-white is-size-3"')) + 1],
 		tag: splitBody[splitBody.findIndex(e => e.includes('<span class="is-size-4"')) + 1],
@@ -59,6 +62,7 @@ const scrape = async (botID = "") => {
 		servers: botInfo[1].replace("Servidores:", "").trim(),
 		votes: parseInt(votes),
 		invites: parseInt(invites),
+		page,
 		botTags: splitBody.filter((e, i) => { if (i > 0 && splitBody[i - 1].includes('<span class="tag botTags')) return e; } ),
 	}
 
