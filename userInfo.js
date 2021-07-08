@@ -15,11 +15,20 @@ const fetch = require("node-fetch");
 
 const scrape = async (userID = "") => {
 
+	function formatHTML(text) { // Esto es para que sea 'opcional' incluir el módulo 'formatHTMLEntities.js' en tu proyecto
+		try { return require("./formatHTMLEntities.js").decode(text); }
+		catch { return text; }
+	}
+
+	function parseNumber(str) {
+		if (isNaN(str)) return 0;
+		else return parseInt(str);
+	}
+
 	if (!userID) { throw "Invalid user ID" }
 	if (typeof userID !== "string") { throw "Invalid user ID, must be a string" }
 
-	const response = await fetch("https://discordthings.com/u/" + userID)
-	const body = await response.text();
+	const body = await (await fetch("https://discordthings.com/u/" + userID)).text();
 
 	var pushString = "";
 	var splitBody = [];
@@ -34,7 +43,6 @@ const scrape = async (userID = "") => {
 			pushString = "";
 		} else pushString += e
 	});
-
 
 	const pageTitle = splitBody[splitBody.indexOf("<title>") + 1];
 	if (pageTitle == "DiscordThings | 404") { throw "The user is not registered on the page" }
@@ -52,17 +60,58 @@ const scrape = async (userID = "") => {
 		badges.splice(badges.findIndex(e => e.startsWith("Puntos:")), 1);
 	}
 	else staffPoints = false;
+
+	var userBotsLinks = splitBody.filter(e => e.includes('<a title=') && e.includes('class="cardBtn1"'));
+	userBotsLinks = userBotsLinks.map(e => {
+
+		var username = splitBody[splitBody.indexOf(e) - 7];
+		var certified = false;
+		var avatar = splitBody[splitBody.indexOf(e) - 11];
+		var invites = splitBody[splitBody.indexOf(e) - 15];
+		var votes = splitBody[splitBody.indexOf(e) - 19];
+
+		if (username.startsWith("<img draggable")) {
+			username = splitBody[splitBody.indexOf(e) - 8];
+			certified = true;
+			avatar = splitBody[splitBody.indexOf(e) - 12];
+			invites = splitBody[splitBody.indexOf(e) - 16];
+			votes = splitBody[splitBody.indexOf(e) - 20];
+		}
+
+		invites = parseNumber(invites.replace("Invites:", "").trim());
+		votes = parseNumber(votes.replace("Votos:", "").trim());
+
+		return {
+			username: formatHTML(username),
+			id: e.match(/\d{3,}/g)[0],
+			avatar: avatar.match(/https:.+webp/g)[0],
+			description: formatHTML(splitBody[splitBody.indexOf(e) - 4]),
+			votes,
+			invites,
+			certified,
+		}
+
+	});
+
+	var userStatus = splitBody.find(e => e.includes('<i class="status2 fad fa-circle'));
+	var status = "online";
+
+	if (userStatus.includes('warning')) status = "idle";
+	if (userStatus.includes('danger')) status = "dnd";
+	if (userStatus.includes('dark')) status = "offline";
 	
 	return {
-		username: splitBody[splitBody.findIndex(e => e.includes('class="UserName is-size-5 has-text-white"')) + 1],
+		username: formatHTML(splitBody[splitBody.findIndex(e => e.includes('class="UserName is-size-5 has-text-white"')) + 1]),
 		id: userID,
-		description: splitBody[splitBody.indexOf('<p class="has-text-white">') + 1],
+		status,
+		avatar: splitBody.find((e, i) => e.includes('<img draggable="false" onerror="imgError(this);"') && splitBody[i-1] == "<br>").match(/https:.+" /g)[0].slice(0, -2),
+		description: formatHTML(splitBody[splitBody.indexOf('<p class="has-text-white">') + 1]),
 		votes: parseInt(votes),
 		lastSession: splitBody[splitBody.findIndex((e, i) => e.includes('<span class="heading has-text-white">') && splitBody[i - 1] == '<div>') + 1],
 		staffPoints,
 		badges,
 		discordBadges: splitBody.filter( (e, i) => splitBody[i - 1] == '<span class="tooltiptext">' && splitBody[i - 2].includes("discord.com/assets/")),
-		bots: splitBody.filter(e => e.includes('<a title=') && e.includes('class="cardBtn1"')).map(e => e.match(/\d{3,}/g)[0]),
+		bots: userBotsLinks,
 	}
 
 }
