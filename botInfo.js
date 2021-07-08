@@ -15,11 +15,20 @@ const fetch = require("node-fetch");
 
 const scrape = async (botID = "") => {
 
+	function formatHTML(text) { // Esto es para que sea 'opcional' incluir el módulo 'formatHTMLEntities.js' en tu proyecto
+		try { return require("./formatHTMLEntities.js").decode(text); }
+		catch { return text; }
+	}
+
+	function parseNumber(str) {
+		if (isNaN(str)) return 0;
+		else return parseInt(str);
+	}
+
 	if (!botID) { throw "Invalid bot ID" }
 	if (typeof botID !== "string") { throw "Invalid bot ID, must be a string" }
 
-	const response = await fetch("https://discordthings.com/bot/" + botID)
-	const body = await response.text();
+	const body = await (await fetch("https://discordthings.com/bot/" + botID)).text();
 
 	var pushString = "";
 	var splitBody = [];
@@ -42,28 +51,35 @@ const scrape = async (botID = "") => {
 
 	const botInfo = splitBody.filter((e, i) => { if (i > 0 && splitBody[i - 1].includes('<p class="box-2">')) return e; } );
 
-	var votes = botInfo[2].replace("Votos:", "").trim();
-	if (isNaN(votes)) votes = 0;
-
-	const invites = botInfo[3].replace("Invitaciones:", "").trim();
-	if (isNaN(invites)) invites = 0;
+	const votes = parseNumber(botInfo[2].replace("Votos:", "").trim());
+	const invites = parseNumber(botInfo[3].replace("Invitaciones:", "").trim());
 
 	var page = splitBody.find(e => e.includes('<a class="mt-3" rel="nofollow noreferer" target="_blank"'));
 	if (page) page = page.match(/http.+/g)[0].slice(0, -2);
 
+	const id = splitBody.find(e => e.includes('<a href="/bot/') && e.includes('report')).match(/\d{3,}/g)[0];
+
+	var invite = "https://discordthings.com/bot/" + id + "/invite";
+	try { invite = await (await fetch("https://discordthings.com/bot/" + id + "/invite")).url; } catch {}
+
 	return {
-		name: splitBody[splitBody.findIndex(e => e.includes('class="has-text-white is-size-3"')) + 1],
+		name: formatHTML(splitBody[splitBody.findIndex(e => e.includes('class="has-text-white is-size-3"')) + 1]),
 		tag: splitBody[splitBody.findIndex(e => e.includes('<span class="is-size-4"')) + 1],
-		id: splitBody.find(e => e.includes('<a href="/bot/') && e.includes('report')).match(/\d{3,}/g)[0],
+		id,
 		avatar: splitBody.find(e => e.includes('<img draggable="false"') && e.includes('https://cdn.discordapp.com/avatars/')).match(/https:.*"/g)[0].slice(0, -1),
-		description: splitBody[splitBody.indexOf('<h3 class="has-text-white is-size-6" style="margin-bottom: 1px;">') + 1],
-		author: splitBody[splitBody.indexOf('<h3 class="has-text-white is-size-6" style="margin-bottom: 1px;">') + 4],
+		description: formatHTML(splitBody[splitBody.indexOf('<h3 class="has-text-white is-size-6" style="margin-bottom: 1px;">') + 1]),
+		author: formatHTML(splitBody[splitBody.indexOf('<h3 class="has-text-white is-size-6" style="margin-bottom: 1px;">') + 4]),
 		prefix: botInfo[0].replace("Prefix:", "").trim(),
 		servers: botInfo[1].replace("Servidores:", "").trim(),
 		votes: parseInt(votes),
 		invites: parseInt(invites),
 		page,
 		botTags: splitBody.filter((e, i) => { if (i > 0 && splitBody[i - 1].includes('<span class="tag botTags')) return e; } ),
+		invite,
+		link: "https://discordthings.com/bot/" + id,
+		voteLink: "https://discordthings.com/bot/" + id + "/vote",
+		reportLink: "https://discordthings.com/bot/" + id + "/report",
+		shortenedLink: "https://dsct.xyz/b/" + id,
 	}
 
 }
