@@ -69,7 +69,7 @@ const scrape = async (botID = "") => {
 		avatar: splitBody.find(e => e.includes('<img draggable="false"') && e.includes('https://cdn.discordapp.com/avatars/')).match(/https:.*"/g)[0].slice(0, -1),
 		description: formatHTML(splitBody[splitBody.indexOf('<h3 class="has-text-white is-size-6" style="margin-bottom: 1px;">') + 1]),
 		author: formatHTML(splitBody[splitBody.indexOf('<h3 class="has-text-white is-size-6" style="margin-bottom: 1px;">') + 4]),
-		prefix: botInfo[0].replace("Prefix:", "").trim(),
+		prefix: formatHTML(botInfo[0].replace("Prefix:", "").trim()),
 		servers: botInfo[1].replace("Servidores:", "").trim(),
 		votes: parseInt(votes),
 		invites: parseInt(invites),
