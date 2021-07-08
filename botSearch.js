@@ -19,8 +19,7 @@ const scrape = async (search = "") => {
 	if (!search) { throw "Invalid search term" }
 	if (typeof search !== "string") { throw "Invalid search term, must be a string" }
 
-	const response = await fetch("https://discordthings.com/search?q=" + encodeURIComponent(search) + "&page=1")
-	const body = await response.text();
+	const body = await (await fetch("https://discordthings.com/search?q=" + encodeURIComponent(search) + "&page=1")).text();
 
 	var pushString = "";
 	var splitBody = [];
