@@ -1451,6 +1451,10 @@ const decode = (text) => {
     let textDecoded = text;
     Object.keys(HTMLEntities).forEach(e => { 
         HTMLEntities[e].forEach(f => {
+            if (f.match(/0{2,}/g)) {
+                const symbol = f.replace(/0{2,}/g, "");
+                textDecoded = textDecoded.split(symbol).join(e);
+            }
             if (!textDecoded.includes(f)) return;
             textDecoded = textDecoded.split(f).join(e);
         });
