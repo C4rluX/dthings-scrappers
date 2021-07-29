@@ -23,7 +23,7 @@ const scrape = async () => {
 	var pushString = "";
 	var splitBody = [];
 
-	body.split("").map(e => {
+	body.split("").forEach(e => {
 		if (e == "<") {
 			if (pushString.trim()) splitBody.push(pushString.trim());
 			pushString = e;
