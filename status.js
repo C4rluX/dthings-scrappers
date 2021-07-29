@@ -17,6 +17,9 @@ const scrape = async () => {
 
 	const body = await (await fetch("https://discordthings.com/estado")).text();
 
+	const pageTitle = splitBody[splitBody.indexOf("<title>") + 1];
+	if (pageTitle.includes("Web server is down")) { throw "DiscordThings web server is down, maybe for maintenance" }
+
 	var pushString = "";
 	var splitBody = [];
 
