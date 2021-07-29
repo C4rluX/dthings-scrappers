@@ -46,6 +46,7 @@ const scrape = async (userID = "") => {
 
 	const pageTitle = splitBody[splitBody.indexOf("<title>") + 1];
 	if (pageTitle == "DiscordThings | 404") { throw "The user is not registered on the page" }
+	if (pageTitle.includes("Web server is down")) { throw "DiscordThings web server is down, maybe for maintenance" }
 
 	var votes = splitBody[splitBody.indexOf('<span class="heading has-text-white">') + 1];
 	if (isNaN(votes)) votes = 0;
