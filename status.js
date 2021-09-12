@@ -17,9 +17,6 @@ const scrape = async () => {
 
 	const body = await (await fetch("https://discordthings.com/estado")).text();
 
-	const pageTitle = splitBody[splitBody.indexOf("<title>") + 1];
-	if (pageTitle.includes("Web server is down")) { throw "DiscordThings web server is down, maybe for maintenance" }
-
 	var pushString = "";
 	var splitBody = [];
 
@@ -40,7 +37,7 @@ const scrape = async () => {
 	return {
 		apiLatency: parseInt(info1[0].replace("ms", "")),
 		registered: parseInt(info1[1]),
-		udm: parseInt(info1[2]),
+		udm: parseFloat(info1[2]),
 		cpu: parseFloat(info1[3]),
 		cpuModel: info1[4],
 		uptime: parseInt(info1[5].replace("segundos", "").trim()),
