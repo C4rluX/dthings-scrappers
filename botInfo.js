@@ -3,9 +3,16 @@
 // Ejemplo de como usarlo:
 
 /*
-
+	
+	// Sin descargar el widget del bot
 	const dtBotInfo = require("./botInfo.js");
 	dtBotInfo("794330629747638312")
+		.then(bot => console.log(bot))
+		.catch(err => console.log(err))
+
+	// Descargando el widget del bot
+	const dtBotInfo = require("./botInfo.js");
+	dtBotInfo("794330629747638312", { downloadWidget: true })
 		.then(bot => console.log(bot))
 		.catch(err => console.log(err))
 
@@ -13,7 +20,7 @@
 
 const fetch = require("node-fetch");
 
-const scrape = async (botID = "") => {
+const scrape = async (botID = "", options = {}) => {
 
 	function formatHTML(text) { // Esto es para que sea 'opcional' incluir el módulo 'formatHTMLEntities.js' en tu proyecto
 		try { return require("./formatHTMLEntities.js").decode(text); }
@@ -23,6 +30,20 @@ const scrape = async (botID = "") => {
 	function parseNumber(str) {
 		if (isNaN(str)) return 0;
 		else return parseInt(str);
+	}
+
+	function clearAvatarLink(str) {
+		return (
+			(str.indexOf("?size=") == -1) ? str : str.slice(0, str.indexOf("?size="))
+		).replace(".webp", "");
+	}
+
+	function extractHref(str) {
+		try {
+			str = formatHTML(str);
+			if (str.match(/href=.+" /g)) return str.match(/href=.+" /g)[0].slice(6, -2);
+			return str.match(/href=.+">/g)[0].slice(6, -2); 
+		} catch { return undefined; }
 	}
 
 	if (!botID) { throw "Invalid bot ID" }
@@ -44,42 +65,42 @@ const scrape = async (botID = "") => {
 		} else pushString += e
 	});
 
-	const pageTitle = splitBody[splitBody.indexOf("<title>") + 1];
+	if (body.includes('DiscordThings - 404')) { throw "The bot is not registered on the page" }
+	const info = splitBody.filter((e, i) => i > 0 && splitBody[i - 1].includes('class="float-right has-text-white"'));
+	const id = splitBody.find(e => e.includes("<a href=") && e.includes("/report")).match(/\d{3,}/g)[0];
+	const authors = splitBody.filter((e, i) => i > 0 && splitBody[i - 1].includes('class="has-text-white"') && splitBody[i - 2].includes('class="dthingsflex__card-content"')).slice(4).map((e, i) => e + info.slice(4)[i]);
+	const botsLinks = splitBody.filter(e => e.startsWith("<a") && e.includes('class="mt-3"'));
 
-	if (pageTitle == "DiscordThings | 404") { throw "The bot is not registered on the page" }
-	if (pageTitle.includes("Web server is down")) { throw "DiscordThings web server is down, maybe for maintenance" }
+	let invite = `https://discordthings.com/bot/${id}/invite`;
+	try { invite = (await fetch(invite)).url }
+	catch {}
 
-	const botInfo = splitBody.filter((e, i) => { if (i > 0 && splitBody[i - 1].includes('<p class="box-2">')) return e; } );
-
-	const votes = parseNumber(botInfo[2].replace("Votos:", "").trim());
-	const invites = parseNumber(botInfo[3].replace("Invitaciones:", "").trim());
-
-	var page = splitBody.find(e => e.includes('<a class="mt-3" rel="nofollow noreferer" target="_blank"'));
-	if (page) page = page.match(/http.+/g)[0].slice(0, -2);
-
-	const id = splitBody.find(e => e.includes('<a href="/bot/') && e.includes('report')).match(/\d{3,}/g)[0];
-
-	var invite = "https://discordthings.com/bot/" + id + "/invite";
-	try { invite = await (await fetch("https://discordthings.com/bot/" + id + "/invite")).url; } catch {}
+	let widget = `https://discordthings.com/bot/${id}/widget`;
+	if (options["downloadWidget"] && options["downloadWidget"] == true) {
+		try {
+			widget = await (await fetch(widget)).buffer();
+		} catch (err) { console.log("Widget download failed: " + err) }
+	}
 
 	return {
-		name: formatHTML(splitBody[splitBody.findIndex(e => e.includes('class="has-text-white is-size-3"')) + 1]),
-		tag: splitBody[splitBody.findIndex(e => e.includes('<span class="is-size-4"')) + 1],
+		username: formatHTML(splitBody[splitBody.findIndex(e => e.includes('class="dthings__main__title mt-2"')) + 1]),
 		id,
-		avatar: splitBody.find(e => e.includes('<img draggable="false"') && e.includes('https://cdn.discordapp.com/avatars/')).match(/https:.*"/g)[0].slice(0, -1),
-		description: formatHTML(splitBody[splitBody.indexOf('<h3 class="has-text-white is-size-6" style="margin-bottom: 1px;">') + 1]),
-		author: formatHTML(splitBody[splitBody.indexOf('<h3 class="has-text-white is-size-6" style="margin-bottom: 1px;">') + 4]),
-		prefix: formatHTML(botInfo[0].replace("Prefix:", "").trim()),
-		servers: botInfo[1].replace("Servidores:", "").trim(),
-		votes: parseInt(votes),
-		invites: parseInt(invites),
-		page,
-		botTags: splitBody.filter((e, i) => { if (i > 0 && splitBody[i - 1].includes('<span class="tag botTags')) return e; } ),
+		avatar: clearAvatarLink(splitBody.find(e => e.startsWith("<img") && e.includes('class="botlogo"')).match(/https:.*" /g)[0].slice(0, -2)),
+		description: formatHTML(splitBody[splitBody.findIndex(e => e.includes('class="lead dthings__main__subtitle mb-2"')) + 1]),
+		tags: splitBody.filter((e, i) => i > 0 && splitBody[i - 1].includes('class="tag botTags mb-1"')),
+		prefix: formatHTML(info[0]),
+		servers: info[1],
+		votes: parseNumber(info[2]),
+		invites: parseNumber(info[3]),
+		authors,
 		invite,
-		link: "https://discordthings.com/bot/" + id,
-		voteLink: "https://discordthings.com/bot/" + id + "/vote",
-		reportLink: "https://discordthings.com/bot/" + id + "/report",
-		shortenedLink: "https://dsct.xyz/b/" + id,
+		page: extractHref(botsLinks[0]) || undefined,
+		supportServer: extractHref(botsLinks[1]) || undefined,
+		github: extractHref(botsLinks[2]) || undefined,
+		donate: extractHref(botsLinks[3]) || undefined,
+		verified: new Boolean(splitBody.find((e, i) => i > 0 && e == "Verificado" && splitBody[i - 1].includes('class="tooltiptext2"'))).valueOf(),
+		certified: new Boolean(splitBody.find((e, i) => i > 0 && e == "Certificado" && splitBody[i - 1].includes('class="tooltiptext2"'))).valueOf(),
+		widget
 	}
 
 }
