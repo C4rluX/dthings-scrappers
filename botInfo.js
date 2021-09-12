@@ -79,7 +79,7 @@ const scrape = async (botID = "", options = {}) => {
 	if (options["downloadWidget"] && options["downloadWidget"] == true) {
 		try {
 			widget = await (await fetch(widget)).buffer();
-		} catch (err) { console.log("Widget download failed: " + err) }
+		} catch (err) { throw `Widget download failed: ${err}` }
 	}
 
 	return {
