@@ -67,8 +67,10 @@ const scrape = async (userID = "") => {
 		
 		const bodySliced = splitBody.slice(e);
 		const votesInvites = bodySliced[bodySliced.findIndex(e => e.includes('class="dthings-card__flex__description"')) + 1].split(" | ");
-		try { let avatar = formatHTML(splitBody[e + 2]).match(/https:.+"\)/g)[0].slice(0, -2); }
-		catch { let avatar = formatHTML(splitBody[e + 2]).match(/https:.+/g)[0]; }
+		
+		let avatar;
+		try { avatar = formatHTML(splitBody[e + 2]).match(/https:.+"\)/g)[0].slice(0, -2); }
+		catch { avatar = formatHTML(splitBody[e + 2]).match(/https:.+/g)[0]; }
 		
 		return {
 			username: formatHTML(bodySliced[bodySliced.findIndex(e => e.includes('class="dthings-card__flex__username"')) + 1]),
