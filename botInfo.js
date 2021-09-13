@@ -12,7 +12,7 @@
 
 	// Descargando el widget del bot
 	const dtBotInfo = require("./botInfo.js");
-	dtBotInfo("794330629747638312", { downloadWidget: true })
+	dtBotInfo("794330629747638312", true)
 		.then(bot => console.log(bot))
 		.catch(err => console.log(err))
 
@@ -20,7 +20,7 @@
 
 const fetch = require("node-fetch");
 
-const scrape = async (botID = "", options = {}) => {
+const scrape = async (botID = "", downloadWidget = false) => {
 
 	function formatHTML(text) { // Esto es para que sea 'opcional' incluir el módulo 'formatHTMLEntities.js' en tu proyecto
 		try { return require("./formatHTMLEntities.js").decode(text); }
@@ -76,7 +76,7 @@ const scrape = async (botID = "", options = {}) => {
 	catch {}
 
 	let widget = `https://discordthings.com/bot/${id}/widget`;
-	if (options["downloadWidget"] && options["downloadWidget"] == true) {
+	if (downloadWidget) {
 		try {
 			widget = await (await fetch(widget)).buffer();
 		} catch (err) { throw `Widget download failed: ${err}` }
